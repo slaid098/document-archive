@@ -2,6 +2,8 @@
 
 Demo project: a document archive — upload with SHA-256 deduplication, versioning, Redis cache-aside, soft delete.
 
+LIVE-DEMO: https://archive.slaid098.dev
+
 ## Stack
 
 - Backend: Python 3.12, FastAPI, Pydantic v2, Tortoise ORM · PostgreSQL 15 · Redis 7
