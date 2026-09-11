@@ -47,7 +47,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-          docker build -t "$IMAGE_PREFIX-backend:latest" backend
+          docker build -t "$IMAGE_PREFIX-backend:latest" .
           docker push "$IMAGE_PREFIX-backend:latest"
 
   frontend:
@@ -68,7 +68,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-          docker build -t "$IMAGE_PREFIX-frontend:latest" frontend
+          docker build -t "$IMAGE_PREFIX-frontend:latest" .
           docker push "$IMAGE_PREFIX-frontend:latest"
 
   deploy:

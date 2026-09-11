@@ -16,7 +16,7 @@ docker compose up --build
 
 UI: http://localhost:80 · Swagger: http://localhost:8000/docs
 
-On the server CI deploys via SSH after a green push to `main`: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build` (app on host port 8080).
+On the server CI deploys via SSH after a green push to `main`: images are pulled from GHCR, then `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d` (app on host port 8080).
 
 Local dev:
 
@@ -32,7 +32,7 @@ docker compose -f docker-compose.test.yml up -d --wait
 cd backend && uv run pytest && uv run ruff check . && uv run ruff format --check .
 ```
 
-CI (GitHub Actions): ruff + pytest + frontend build.
+CI (GitHub Actions): ruff + pytest + frontend build; on `main` images are pushed to GHCR and the server pulls them.
 
 ## Architecture
 
