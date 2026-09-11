@@ -1,10 +1,14 @@
-# Server deployment overlay: the app is served on host port 8080 (whitelisted
-# in the firewall for the reverse-proxy server), the backend API stays
-# unreachable from outside the compose network.
+# Server deployment overlay: images come from GHCR (built by CI), the app is
+# served on host port 8080 (whitelisted in the firewall for the reverse-proxy
+# server), the backend API stays inside the compose network.
 services:
   backend:
+    build: !reset null
+    image: ghcr.io/slaid098/document-archive-backend:latest
     ports: !reset []
 
   frontend:
-    ports:
+    build: !reset null
+    image: ghcr.io/slaid098/document-archive-frontend:latest
+    ports: !override
       - "8080:80"

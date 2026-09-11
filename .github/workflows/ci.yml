@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_PREFIX: ghcr.io/slaid098/document-archive
+
 jobs:
   backend:
     runs-on: ubuntu-latest
@@ -36,6 +43,12 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest
+      - name: Build and push the backend image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker build -t "$IMAGE_PREFIX-backend:latest" backend
+          docker push "$IMAGE_PREFIX-backend:latest"
 
   frontend:
     runs-on: ubuntu-latest
@@ -51,6 +64,12 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run build
+      - name: Build and push the frontend image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker build -t "$IMAGE_PREFIX-frontend:latest" frontend
+          docker push "$IMAGE_PREFIX-frontend:latest"
 
   deploy:
     needs: [backend, frontend]
@@ -77,4 +96,5 @@ jobs:
               git clone "$REPO" "$APP_DIR"
             fi
             cd "$APP_DIR"
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
