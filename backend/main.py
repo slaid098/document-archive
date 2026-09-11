@@ -29,7 +29,7 @@ async def lifespan(fastapi_app: FastAPI) -> AsyncIterator[None]:
 
 async def _enshure_storage_path() -> None:
     path = Path(settings.storage_dir)
-    await asyncio.to_thread(path.mkdir, exist_ok=True)
+    await asyncio.to_thread(path.mkdir, parents=True, exist_ok=True)
 
 
 app = FastAPI(title="Document Archive", version="1.0.0", lifespan=lifespan)
