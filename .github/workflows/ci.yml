@@ -66,6 +66,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
+            # the server's gitconfig rewrites github.com to a private mirror
+            export GIT_CONFIG_GLOBAL=/dev/null
             APP_DIR=/root/dockers/document-archive
             REPO=https://github.com/slaid098/document-archive.git
             if [ -d "$APP_DIR/.git" ]; then
