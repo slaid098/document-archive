@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: postgres://archive_test:archive_test@localhost:5432/archive_test
+      REDIS_URL: ""
+      STORAGE_DIR: ./app_data/tests/storage
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: archive_test
+          POSTGRES_PASSWORD: archive_test
+          POSTGRES_DB: archive_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U archive_test -d archive_test"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v10
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  deploy:
+    needs: [backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to the server over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            APP_DIR=/root/dockers/document-archive
+            REPO=https://github.com/slaid098/document-archive.git
+            if [ -d "$APP_DIR/.git" ]; then
+              git -C "$APP_DIR" pull
+            else
+              mkdir -p "$APP_DIR"
+              git clone "$REPO" "$APP_DIR"
+            fi
+            cd "$APP_DIR"
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build

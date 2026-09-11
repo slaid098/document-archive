@@ -1,0 +1,40 @@
+[project]
+name = "archive-backend"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = [
+    "aiofiles==25.1.0",
+    "fastapi==0.141.1",
+    "loguru>=0.7.3",
+    "pydantic-settings==2.8.1",
+    "python-multipart==0.0.20",
+    "redis==6.2.0",
+    "tortoise-orm[asyncpg]==1.1.8",
+    "tzdata==2025.2",
+    "uvicorn[standard]==0.41.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx==0.28.1",
+    "pytest==9.0.2",
+    "ruff==0.14.6",
+]
+
+# Not installable as a package: dependencies only
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["app", "tests", "main.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+# B008 — canonical FastAPI idiom (File/Form in parameter defaults)
+ignore = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

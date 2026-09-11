@@ -1,0 +1,55 @@
+# Cap container logs: 3 files x 10 MB per service, oldest is dropped.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: archive
+      POSTGRES_PASSWORD: archive
+      POSTGRES_DB: archive
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U archive -d archive"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
+  redis:
+    image: redis:7-alpine
+    logging: *default-logging
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgres://archive:archive@db:5432/archive
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_DIR: /app/app_data/storage
+    volumes:
+      - ./app_data/storage:/app/app_data/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    logging: *default-logging
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_started
+    logging: *default-logging
+
+volumes:
+  pg_data:

@@ -1,0 +1,10 @@
+# Server deployment overlay: the app is served on host port 8080 (whitelisted
+# in the firewall for the reverse-proxy server), the backend API stays
+# unreachable from outside the compose network.
+services:
+  backend:
+    ports: !reset []
+
+  frontend:
+    ports:
+      - "8080:80"

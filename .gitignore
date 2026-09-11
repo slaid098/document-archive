@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+
+# Claude Code local settings
+.claude/
+
+# App data (only .gitkeep files are tracked)
+app_data/*
+!app_data/storage/
+app_data/storage/*
+!app_data/storage/.gitkeep
+
+# Secrets
+.env
